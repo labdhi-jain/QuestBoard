@@ -1,0 +1,130 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String             @id @default(uuid())
+  name             String
+  email            String             @unique
+  passwordHash     String
+  role             String             @default("STUDENT") // STUDENT | ADMIN
+  lifetimePoints   Int                @default(0)
+  pointsBalance    Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  // Relations
+  createdQuests    Quest[]            @relation("QuestCreator")
+  checkIns         CheckIn[]          @relation("UserCheckIns")
+  verifiedCheckIns CheckIn[]          @relation("AdminVerifier")
+  redemptions      RewardRedemption[]
+  notifications    Notification[]
+
+  @@index([lifetimePoints])
+}
+
+model Quest {
+  id                  String             @id @default(uuid())
+  title               String
+  description         String
+  locationHint        String
+  pointValue          Int
+  category            String             // EXPLORE | ACADEMICS | SOCIAL | WELLNESS
+  verificationType    String             @default("QR") // QR | MANUAL
+  status              String             @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  prerequisiteQuestId String?
+  createdById         String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Self-relation
+  prerequisiteQuest   Quest?             @relation("QuestPrerequisite", fields: [prerequisiteQuestId], references: [id])
+  dependentQuests     Quest[]            @relation("QuestPrerequisite")
+
+  // Relations
+  createdBy           User               @relation("QuestCreator", fields: [createdById], references: [id])
+  qrCodes             QRCode[]
+  checkIns            CheckIn[]
+
+  @@index([status])
+}
+
+model QRCode {
+  id        String    @id @default(uuid())
+  questId   String
+  token     String    @unique
+  expiresAt DateTime?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  quest     Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([questId, active])
+}
+
+model CheckIn {
+  id           String    @id @default(uuid())
+  userId       String
+  questId      String
+  status       String    @default("PENDING") // PENDING | VERIFIED | REJECTED
+  method       String    @default("QR") // QR | MANUAL
+  note         String?
+  verifiedById String?
+  createdAt    DateTime  @default(now())
+  verifiedAt   DateTime?
+
+  user         User      @relation("UserCheckIns", fields: [userId], references: [id], onDelete: Cascade)
+  quest        Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  verifiedBy   User?     @relation("AdminVerifier", fields: [verifiedById], references: [id])
+
+  // Unique constraint ensures a student can only check in once per quest
+  @@unique([userId, questId])
+  @@index([status])
+  @@index([verifiedAt])
+}
+
+model Reward {
+  id          String             @id @default(uuid())
+  title       String
+  description String
+  pointCost   Int
+  stock       Int
+  active      Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  redemptions RewardRedemption[]
+}
+
+model RewardRedemption {
+  id          String   @id @default(uuid())
+  userId      String
+  rewardId    String
+  pointsSpent Int
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward      Reward   @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([rewardId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
