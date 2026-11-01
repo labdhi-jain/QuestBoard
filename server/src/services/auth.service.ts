@@ -9,11 +9,11 @@ import { AuthUser } from '../middleware/auth.middleware';
 export class AuthService {
   /**
    * Validates if the email belongs to an authorized college domain
+   * Requirement: User can only register if their email ends with '@vitapstudent.ac.in'
    */
   static validateEmailDomain(email: string): boolean {
-    const domain = email.split('@')[1]?.toLowerCase();
-    if (!domain) return false;
-    return ENV.ALLOWED_EMAIL_DOMAINS.some((allowed) => domain === allowed || domain.endsWith('.' + allowed));
+    const normalized = email.trim().toLowerCase();
+    return normalized.endsWith('@vitapstudent.ac.in');
   }
 
   /**
@@ -25,7 +25,7 @@ export class AuthService {
 
     if (!this.validateEmailDomain(email)) {
       throw new AppError(
-        `Invalid college email. Please use your official university email (@${ENV.ALLOWED_EMAIL_DOMAINS.join(', @')})`,
+        'Invalid college email. Registration is strictly restricted to emails ending with @vitapstudent.ac.in',
         400,
         'INVALID_EMAIL_DOMAIN'
       );

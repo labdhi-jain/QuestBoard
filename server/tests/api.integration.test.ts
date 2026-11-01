@@ -47,7 +47,19 @@ describe('QuestBoard Full RESTful API Integration Test', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_EMAIL_DOMAIN');
-    expect(res.body.error.message).toMatch(/Invalid college email/);
+    expect(res.body.error.message).toMatch(/@vitapstudent\.ac\.in/);
+
+    const res2 = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Non Vitap Dave',
+        email: 'dave@college.edu',
+        password: 'Password123!',
+      });
+
+    expect(res2.status).toBe(400);
+    expect(res2.body.error.code).toBe('INVALID_EMAIL_DOMAIN');
+    expect(res2.body.error.message).toMatch(/@vitapstudent\.ac\.in/);
   });
 
   it('US-02: Student browses quests with computed per-student statuses', async () => {
@@ -110,7 +122,7 @@ describe('QuestBoard Full RESTful API Integration Test', () => {
       .post('/api/auth/register')
       .send({
         name: 'New Scan Tester',
-        email: 'scantester@college.edu',
+        email: 'scantester@vitapstudent.ac.in',
         password: 'Password123!',
       });
     expect(regRes.status).toBe(201);
@@ -160,7 +172,7 @@ describe('QuestBoard Full RESTful API Integration Test', () => {
       .post('/api/auth/register')
       .send({
         name: 'Manual Queue Tester',
-        email: 'manualqueue@college.edu',
+        email: 'manualqueue@vitapstudent.ac.in',
         password: 'Password123!',
       });
     const queueStudentCookie = regRes.headers['set-cookie'][0];

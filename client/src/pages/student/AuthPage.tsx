@@ -25,6 +25,12 @@ export const AuthPage: React.FC = () => {
     setError(null);
     setIsSubmitting(true);
 
+    if (tab === 'register' && !email.trim().toLowerCase().endsWith('@vitapstudent.ac.in')) {
+      setError('Registration is strictly restricted to emails ending with @vitapstudent.ac.in');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       if (tab === 'register') {
         const user = await register(name, email, password);
@@ -126,7 +132,7 @@ export const AuthPage: React.FC = () => {
           <div className="mb-4 p-3 rounded-2xl bg-sky/20 border-2 border-sky text-ink text-xs flex items-start gap-2">
             <GraduationCap className="w-4 h-4 text-sky-dark shrink-0 mt-0.5" />
             <span>
-              <strong>College email required:</strong> Registration is restricted to <code>@college.edu</code> addresses.
+              <strong>VIT-AP email required:</strong> Registration is restricted to <code>@vitapstudent.ac.in</code> addresses.
             </span>
           </div>
         )}
@@ -145,7 +151,7 @@ export const AuthPage: React.FC = () => {
           <Input
             label="College Email"
             type="email"
-            placeholder="student@college.edu"
+            placeholder="student@vitapstudent.ac.in"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
