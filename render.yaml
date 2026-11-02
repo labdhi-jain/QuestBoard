@@ -12,3 +12,5 @@ services:
         generateValue: true
       - key: ALLOWED_EMAIL_DOMAIN
         value: vitapstudent.ac.in
+      - key: DATABASE_URL
+        value: "file:./dev.db"
