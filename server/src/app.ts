@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
 import { ENV } from './config/env';
 import { errorHandler } from './middleware/error.middleware';
 
@@ -17,7 +19,7 @@ export const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: [ENV.APP_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: true,
   credentials: true,
 }));
 app.use(cookieParser());
@@ -41,3 +43,15 @@ app.use('/api/me', meRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
+
+// Serve frontend static build in production
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}

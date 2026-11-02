@@ -9,5 +9,5 @@ export const ENV = {
   ALLOWED_EMAIL_DOMAINS: (process.env.ALLOWED_EMAIL_DOMAIN || 'vitapstudent.ac.in')
     .split(',')
     .map((d) => d.trim().toLowerCase()),
-  APP_URL: process.env.APP_URL || 'http://localhost:5173',
+  APP_URL: process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || 'http://localhost:5173',
 };
