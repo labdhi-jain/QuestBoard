@@ -168,13 +168,15 @@ describe('QuestBoard Full RESTful API Integration Test', () => {
     const manualQuest = questsRes.body.quests.find((q: any) => q.verificationType === 'MANUAL');
 
     // Create a fresh student for manual submission
+    const uniqueEmail = `manualqueue_${Date.now()}_${Math.random().toString(36).substring(7)}@vitapstudent.ac.in`;
     const regRes = await request(app)
       .post('/api/auth/register')
       .send({
         name: 'Manual Queue Tester',
-        email: 'manualqueue@vitapstudent.ac.in',
+        email: uniqueEmail,
         password: 'Password123!',
       });
+    expect(regRes.status).toBe(201);
     const queueStudentCookie = regRes.headers['set-cookie'][0];
 
     // Student submits "I did it"
